@@ -12,4 +12,4 @@ permissions:
 jobs:
   scan-pr:
     name: Dependency vulnerability review
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@c7c7bcb0773cc4678a674ada03a66cc5c4325476 # v2.6.0
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@8ac9e5ce44cc7178e0e04229a91bdcc003166e57 # v2.6.0
