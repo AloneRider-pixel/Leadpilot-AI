@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOrgMember(orgId) {
+      return isSignedIn() && exists(/databases/$(database)/documents/organizations/$(orgId)/users/$(request.auth.uid));
+    }
+
+    function getOrgMemberRole(orgId) {
+      return get(/databases/$(database)/documents/organizations/$(orgId)/users/$(request.auth.uid)).data.role;
+    }
+
+    function isOrgAdminOrOwner(orgId) {
+      return isOrgMember(orgId) && (getOrgMemberRole(orgId) == 'OWNER' || getOrgMemberRole(orgId) == 'ADMIN');
+    }
+
+    // Root users collection: maps user authentication to their organization profile
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId);
+      allow list: if isSignedIn() && (request.auth.uid == userId);
+      allow create, update: if isSignedIn() && (request.auth.uid == userId)
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // Organizations collection
+    match /organizations/{orgId} {
+      allow get: if isSignedIn() && (isOrgMember(orgId) || resource.data.ownerId == request.auth.uid);
+      allow list: if isSignedIn();
+      // Allow authenticated user to create their initial organization
+      allow create: if isSignedIn() && isValidId(orgId) && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isSignedIn() && isOrgAdminOrOwner(orgId) && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      // Organization users roster
+      match /users/{memberId} {
+        allow read: if isSignedIn() && (isOrgMember(orgId) || request.auth.uid == memberId);
+        // Owner or self-joining during onboarding
+        allow create, update: if isSignedIn() && (
+          request.auth.uid == memberId || 
+          isOrgAdminOrOwner(orgId)
+        );
+        allow delete: if isSignedIn() && isOrgAdminOrOwner(orgId);
+      }
+
+      // Organization leads
+      match /leads/{leadId} {
+        allow read: if isSignedIn() && isOrgMember(orgId);
+        allow create: if isSignedIn() && isOrgMember(orgId) && isValidId(leadId) && request.resource.data.organizationId == orgId;
+        allow update: if isSignedIn() && isOrgMember(orgId) && request.resource.data.organizationId == orgId;
+        allow delete: if isSignedIn() && isOrgAdminOrOwner(orgId);
+      }
+
+      // Organization conversations
+      match /conversations/{conversationId} {
+        allow read, write: if isSignedIn() && isOrgMember(orgId);
+      }
+
+      // Organization follow-ups
+      match /followups/{followupId} {
+        allow read, write: if isSignedIn() && isOrgMember(orgId);
+      }
+
+      // Organization appointments
+      match /appointments/{appointmentId} {
+        allow read, write: if isSignedIn() && isOrgMember(orgId);
+      }
+
+      // Organization properties
+      match /properties/{propertyId} {
+        allow read: if isSignedIn() && isOrgMember(orgId);
+        allow write: if isSignedIn() && isOrgAdminOrOwner(orgId);
+      }
+
+      // Organization activities & audit logs
+      match /activities/{activityId} {
+        allow read: if isSignedIn() && isOrgMember(orgId);
+        allow create: if isSignedIn() && isOrgMember(orgId);
+        allow update, delete: if false; // Append-only audit log
+      }
+
+      // Organization notifications
+      match /notifications/{notificationId} {
+        allow read, write: if isSignedIn() && isOrgMember(orgId);
+      }
+
+      // Organization lead analyses
+      match /LeadAnalysis/{analysisId} {
+        allow read, write: if isSignedIn() && isOrgMember(orgId);
+      }
+      match /leadAnalyses/{analysisId} {
+        allow read, write: if isSignedIn() && isOrgMember(orgId);
+      }
+
+      // Organization revenue attribution events
+      match /revenueEvents/{eventId} {
+        allow read: if isSignedIn() && isOrgMember(orgId);
+        allow write: if isSignedIn() && isOrgAdminOrOwner(orgId);
+      }
+    }
+
+    // Root LeadAnalysis collection linked by organizationId and leadId
+    match /LeadAnalysis/{analysisId} {
+      allow read, write: if isSignedIn();
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "LeadPilot AI",
+  "description": "AI Sales & Revenue Operating System for Real Estate - Convert inbound enquiries into qualified opportunities, follow-ups, appointments and revenue.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,107 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with organization reference and system role",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "photoURL": { "type": "string", "maxLength": 512 },
+        "organizationId": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["OWNER", "ADMIN", "MANAGER", "SALES_REP"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "email", "role"]
+    },
+    "Organization": {
+      "title": "Organization",
+      "description": "Tenant company profile and configuration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "industry": { "type": "string", "maxLength": 64 },
+        "primaryCity": { "type": "string", "maxLength": 64 },
+        "companySize": { "type": "string", "maxLength": 64 },
+        "salespeopleCount": { "type": "number" },
+        "monthlyLeads": { "type": "number" },
+        "avgPropertyValue": { "type": "number" },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "plan": { "type": "string", "enum": ["TRIAL", "STARTER", "GROWTH", "ENTERPRISE"] },
+        "subscriptionStatus": { "type": "string", "enum": ["ACTIVE", "TRIAL", "PAST_DUE", "CANCELED"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "ownerId", "primaryCity"]
+    },
+    "OrgMember": {
+      "title": "OrgMember",
+      "description": "Organization membership and role mapping",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["OWNER", "ADMIN", "MANAGER", "SALES_REP"] },
+        "status": { "type": "string", "enum": ["ACTIVE", "INVITED", "DISABLED"] },
+        "joinedAt": { "type": "string" }
+      },
+      "required": ["userId", "email", "role"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Real estate buyer or investor prospect enquiry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "organizationId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "email": { "type": "string", "maxLength": 128 },
+        "city": { "type": "string", "maxLength": 64 },
+        "preferredLocation": { "type": "string", "maxLength": 128 },
+        "propertyType": { "type": "string", "maxLength": 64 },
+        "bedrooms": { "type": "string", "maxLength": 32 },
+        "budget": { "type": "number" },
+        "timelineDays": { "type": "number" },
+        "financingReadiness": { "type": "string", "maxLength": 64 },
+        "purpose": { "type": "string", "enum": ["SELF_USE", "INVESTMENT", "RENTAL_INCOME", "OTHER"] },
+        "source": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "enum": ["NEW", "CONTACTED", "QUALIFIED", "INTERESTED", "SITE_VISIT", "NEGOTIATION", "BOOKED", "WON", "LOST"] },
+        "temperature": { "type": "string", "enum": ["HOT", "WARM", "COLD"] },
+        "intentScore": { "type": "number" },
+        "assignedRepId": { "type": "string", "maxLength": 128 },
+        "assignedRepName": { "type": "string", "maxLength": 128 },
+        "propertyId": { "type": "string", "maxLength": 128 },
+        "notes": { "type": "string", "maxLength": 2048 },
+        "isDemo": { "type": "string" },
+        "lastContactAt": { "type": "string" },
+        "nextFollowUpAt": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "organizationId", "name", "phone", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile with tenant reference"
+    },
+    "/organizations/{organizationId}": {
+      "schema": "Organization",
+      "description": "Tenant organization root details"
+    },
+    "/organizations/{organizationId}/users/{userId}": {
+      "schema": "OrgMember",
+      "description": "Tenant user roster and roles"
+    },
+    "/organizations/{organizationId}/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Tenant leads database"
+    }
+  }
+}
