@@ -1,8 +1,9 @@
 {
-  "name": "react-example",
+  "name": "leadpilot-ai",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "bun@1.4.2",
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
