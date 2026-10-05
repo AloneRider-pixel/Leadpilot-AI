@@ -5,13 +5,11 @@ on:
     branches: [main]
 
 permissions:
+  actions: read
   contents: read
+  security-events: write
 
 jobs:
-  dependency-review:
-    name: Dependency Review
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Review dependency changes
-        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+  scan-pr:
+    name: Dependency vulnerability review
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@a345acf6bb0a4d6c0eb0c4d0e1b0a3a0f9d7c7c4 # v2.6.0
