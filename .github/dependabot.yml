@@ -1,9 +1,9 @@
 version: 2
+
+# Dependabot's current Bun updater cannot parse this repository's lockfileVersion 2.
+# Dependency vulnerability and CI coverage remain enforced through OSV/CI; keep
+# GitHub Actions dependencies under Dependabot until Bun lockfile support catches up.
 updates:
-  - package-ecosystem: bun
-    directory: /
-    schedule:
-      interval: weekly
   - package-ecosystem: github-actions
     directory: /
     schedule:
